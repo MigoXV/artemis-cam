@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package vision.v1;
+
+import "artemis_cam/protos/detector/common.proto";
+
+service WebRtcDetectorEngine {
+  rpc CreateStream(CreateStreamRequest) returns (CreateStreamReply);
+  rpc UpdateStream(StreamSignal) returns (UpdateStreamReply);
+  rpc StreamDetections(StreamDetectionsRequest) returns (stream StreamDetectionsReply);
+}
+
+message IceServer {
+  repeated string urls = 1;
+  string username = 2;
+  string credential = 3;
+}
+
+message SessionDescription {
+  string type = 1;
+  string sdp = 2;
+}
+
+message IceCandidate {
+  string candidate = 1;
+  string sdp_mid = 2;
+  int32 sdp_mline_index = 3;
+}
+
+message CreateStreamRequest {
+  StreamConfig config = 1;
+}
+
+message CreateStreamReply {
+  string stream_id = 1;
+  SessionDescription offer = 2;
+  repeated IceServer ice_servers = 3;
+}
+
+message StreamSignal {
+  string stream_id = 1;
+  oneof signal {
+    SessionDescription answer = 2;
+    IceCandidate ice_candidate = 3;
+  }
+}
+
+message UpdateStreamReply {
+  repeated IceCandidate ice_candidates = 1;
+}
+
+message StreamDetectionsRequest {
+  string stream_id = 1;
+}
+
+message StreamDetectionsReply {
+  string stream_id = 1;
+  string request_id = 2;
+  uint64 pts_ms = 3;
+  repeated Detection detections = 4;
+  uint64 frame_id = 5;
+}
